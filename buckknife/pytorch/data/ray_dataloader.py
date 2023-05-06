@@ -51,14 +51,16 @@ class RayDataLoader(DataLoader):
         if ray.is_initialized():
             return _RayDataLoaderIter(self, self._ray_remote_args)
 
-        warn("Ray has not been initialized. Falling back to the base DataLoader implementation.")
+        warn(
+            "Ray has not been initialized. Falling back to the base DataLoader implementation."
+        )
         return super()._get_iterator()
 
 
 class _RayDataLoaderIter(_BaseDataLoaderIter):
     """
     Key logic:
-    
+
     * On instantiation, `ray.put` the `dataset_fetcher` (which contains the dataset). This could get
       ugly if the dataset instance is big. (Hint: instead of an in-memory cache, maybe use the Ray
       object store for caching the result of `__getitem__`).
@@ -78,7 +80,11 @@ class _RayDataLoaderIter(_BaseDataLoaderIter):
 
         self.dataset_fetcher = ray.put(
             _DatasetKind.create_fetcher(
-                self._dataset_kind, self._dataset, self._auto_collation, self._collate_fn, self._drop_last
+                self._dataset_kind,
+                self._dataset,
+                self._auto_collation,
+                self._collate_fn,
+                self._drop_last,
             )
         )
         self._fetch = _fetch.options(**remote_args)
@@ -86,15 +92,15 @@ class _RayDataLoaderIter(_BaseDataLoaderIter):
         self._cease_prefetching = False
 
     def _next_data(self):
-        while (not self._cease_prefetching) and (len(self._prefetched) < self._prefetch_factor):
+        while (not self._cease_prefetching) and (
+            len(self._prefetched) < self._prefetch_factor
+        ):
             try:
                 index = self._next_index()
             except StopIteration:
                 self._cease_prefetching = True
                 break
-            self._prefetched.append(
-                self._fetch.remote(self.dataset_fetcher, index)
-            )
+            self._prefetched.append(self._fetch.remote(self.dataset_fetcher, index))
 
         data_pointer = self._prefetched.pop(0)
         try:

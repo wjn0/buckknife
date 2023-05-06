@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["buckknife"]
+
+[project]
+name = "buckknife"
+version = "0.0.1"
+authors = [
+  { name="Walter Nelson", email="walterj.nelson@mail.utoronto.ca" },
+]
+description = "Utilities for data science and machine learning"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.7"
+dependencies = [
+    "torch",
+    "ray",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/wjn0/buckknife"
+"Bug Tracker" = "https://github.com/wjn0/buckknife/issues"

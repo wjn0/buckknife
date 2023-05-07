@@ -13,9 +13,10 @@ from buckknife.caching.actor import CacheActor
 
 
 class CacheActorTest(unittest.TestCase):
-    def setUp(self):
+    def setUpClass():
         ray.init(num_cpus=1, num_gpus=0)
 
+    def setUp(self):
         self.actor = CacheActor.remote(name="test_cache")
 
     def test_sets_key(self):
@@ -42,5 +43,5 @@ class CacheActorTest(unittest.TestCase):
         assert ray.get(self.actor.contains.remote("test_key3"))
         assert ray.get(self.actor.get.remote("test_key3")) == "my_value3"
 
-    def tearDown(self):
+    def tearDownClass():
         ray.shutdown()

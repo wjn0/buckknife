@@ -13,9 +13,10 @@ from buckknife.pytorch.data import RayDataLoader
 
 
 class RayDataLoaderTest(unittest.TestCase):
-    def setUp(self):
+    def setUpClass():
         ray.init(num_cpus=1, num_gpus=0)
 
+    def setUp(self):
         self.dataset = MyDataset()
 
     def test_gets_batch(self):
@@ -24,7 +25,7 @@ class RayDataLoaderTest(unittest.TestCase):
 
         assert batch.size(0) == 2
 
-    def tearDown(self):
+    def tearDownClass():
         ray.shutdown()
 
 

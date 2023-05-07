@@ -1,3 +1,5 @@
+import ray
+
 from .actor import CacheActor
 
 
@@ -23,8 +25,8 @@ def _cache(f):
                "function_name": f_name,
                "args": args,
                "kwargs": kwargs}
-        key_hash = CacheActor.compute_hash(key)
-        if f.__cache__.contains_key_hash(key_hash):
+        key_hash = CacheActor.hash_python_object(key)
+        if ray.get(f.__cache__.contains_by_hash.remote(key_hash)):
             result = ray.get(f.__cache__.get_by_hash.remote(key_hash))
         else:
             result = f(*args, **kwargs)

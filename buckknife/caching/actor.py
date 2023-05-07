@@ -1,3 +1,5 @@
+from abc import ABCMeta
+
 from numbers import Number
 
 import numpy as np
@@ -121,34 +123,42 @@ class CacheActor:
         """
         return key_hash in self._cache
 
+    def num_items(self):
+        """Check the number of items in the cache."""
+        return len(self._cache)
+
     @staticmethod
     def hash_python_object(arg):
-        if isinstance(arg, dict):
-            return _hash_dict(arg)
-        elif isinstance(arg, Number):
-            return _hash_number(arg)
-        elif isinstance(arg, np.ndarray):
-            return _hash_np(arg)
-        elif isinstance(arg, bool):
-            return _hash_bool(arg)
-        elif isinstance(arg, str):
-            return _hash_str(arg)
-        elif isinstance(arg, ABCMeta):
-            return _hash_class(arg)
-        elif arg is None:
-            return NONE_VAL
-        elif isinstance(arg, pd.DataFrame):
-            return _hash_df(arg)
-        elif isinstance(arg, list):
-            return _hash_list(arg)
-        elif isinstance(arg, tuple):
-            return hash(tuple(_hash_value(el) for el in arg))
-        elif inspect.isclass(arg):
-            return _hash_class(arg)
-        elif callable(arg):
-            return _hash_callable(arg)
-        else:
-            raise ValueError(f"Not sure how to hash {arg}")
+        return _hash_python_object(arg)
+
+
+def _hash_python_object(arg):
+    if isinstance(arg, dict):
+        return _hash_dict(arg)
+    elif isinstance(arg, Number):
+        return _hash_number(arg)
+    elif isinstance(arg, np.ndarray):
+        return _hash_np(arg)
+    elif isinstance(arg, bool):
+        return _hash_bool(arg)
+    elif isinstance(arg, str):
+        return _hash_str(arg)
+    elif isinstance(arg, ABCMeta):
+        return _hash_class(arg)
+    elif arg is None:
+        return NONE_VAL
+    elif isinstance(arg, pd.DataFrame):
+        return _hash_df(arg)
+    elif isinstance(arg, list):
+        return _hash_list(arg)
+    elif isinstance(arg, tuple):
+        return hash(tuple(_hash_python_object(el) for el in arg))
+    elif inspect.isclass(arg):
+        return _hash_class(arg)
+    elif callable(arg):
+        return _hash_callable(arg)
+    else:
+        raise ValueError(f"Not sure how to hash {arg}")
 
 
 def _hash_number(arg):
@@ -166,8 +176,8 @@ def _hash_bool(arg):
 def _hash_dict(arg):
     return (
         3,
-        hash(tuple(_hash_value(el) for el in arg.keys())),
-        hash(tuple(_hash_value(el) for el in arg.values())),
+        hash(tuple(_hash_python_object(el) for el in arg.keys())),
+        hash(tuple(_hash_python_object(el) for el in arg.values())),
     )
 
 
@@ -188,8 +198,8 @@ def _hash_estimator(arg):
 
 
 def _hash_list(arg):
-    return (8, _hash_value(tuple(arg)))
+    return (8, _hash_python_object(tuple(arg)))
 
 
 def _hash_callable(arg):
-    return (9, _hash_value(arg.__name__))
+    return (9, _hash_python_object(arg.__name__))

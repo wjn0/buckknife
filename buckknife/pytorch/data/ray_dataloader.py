@@ -7,7 +7,7 @@ from warnings import warn
 import ray
 
 from torch.utils.data.dataloader import DataLoader, _BaseDataLoaderIter, _DatasetKind
-from torch.utils.data import _utils
+from torch.utils.data import _utils, IterableDataset
 
 
 class RayDataLoader(DataLoader):
@@ -74,6 +74,9 @@ class _RayDataLoaderIter(_BaseDataLoaderIter):
 
     def __init__(self, loader, remote_args: Dict):
         super().__init__(loader)
+
+        if isinstance(self._dataset, IterableDataset):
+            warn("RayDataLoader may not be compatible with `IterableDataset`.")
 
         self._prefetch_factor = loader.ray_prefetch_factor
         assert self._prefetch_factor > 0, "prefetch_factor must be >0"

@@ -9,7 +9,10 @@ jobs:
             - name: Check out server repository
               uses: actions/checkout@v3
 
-            - name: Install builddeps
+            - name: Install system builddeps
+              run: apt-get install -y build-essential
+
+            - name: Install Python builddeps
               run: python3 -m pip install build pylint black
 
             - name: Build package

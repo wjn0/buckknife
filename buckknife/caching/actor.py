@@ -1,4 +1,8 @@
+"""An actor for caching objects in the Ray object store."""
+
 from abc import ABCMeta
+
+import inspect
 
 from numbers import Number
 
@@ -9,7 +13,6 @@ import pandas as pd
 import pyhash
 
 import ray
-
 
 
 # A fairly efficient hash function, but can of course be overwritten.
@@ -42,7 +45,7 @@ class CacheActor:
         success = True
 
         return success
-    
+
     def get(self, key):
         """
         Get a value from the store.
@@ -89,7 +92,7 @@ class CacheActor:
         """
         self._cache[key_hash] = value
         success = True
-        
+
         return success
 
     def get_by_hash(self, key_hash):
@@ -129,36 +132,38 @@ class CacheActor:
 
     @staticmethod
     def hash_python_object(arg):
+        """Hash a Python object depending on its type."""
         return _hash_python_object(arg)
 
 
 def _hash_python_object(arg):
+    # pylint: disable=too-many-return-statements
     if isinstance(arg, dict):
         return _hash_dict(arg)
-    elif isinstance(arg, Number):
+    if isinstance(arg, Number):
         return _hash_number(arg)
-    elif isinstance(arg, np.ndarray):
+    if isinstance(arg, np.ndarray):
         return _hash_np(arg)
-    elif isinstance(arg, bool):
+    if isinstance(arg, bool):
         return _hash_bool(arg)
-    elif isinstance(arg, str):
+    if isinstance(arg, str):
         return _hash_str(arg)
-    elif isinstance(arg, ABCMeta):
+    if isinstance(arg, ABCMeta):
         return _hash_class(arg)
-    elif arg is None:
-        return NONE_VAL
-    elif isinstance(arg, pd.DataFrame):
+    if arg is None:
+        return hasher("[cache] Python None value")
+    if isinstance(arg, pd.DataFrame):
         return _hash_df(arg)
-    elif isinstance(arg, list):
+    if isinstance(arg, list):
         return _hash_list(arg)
-    elif isinstance(arg, tuple):
+    if isinstance(arg, tuple):
         return hash(tuple(_hash_python_object(el) for el in arg))
-    elif inspect.isclass(arg):
+    if inspect.isclass(arg):
         return _hash_class(arg)
-    elif callable(arg):
+    if callable(arg):
         return _hash_callable(arg)
-    else:
-        raise ValueError(f"Not sure how to hash {arg}")
+
+    raise ValueError(f"Not sure how to hash {arg}")
 
 
 def _hash_number(arg):

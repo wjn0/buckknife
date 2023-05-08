@@ -18,6 +18,9 @@ requires-python = ">=3.7"
 dependencies = [
     "torch",
     "ray",
+    "pandas",
+    "numpy",
+    "pyhash",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
